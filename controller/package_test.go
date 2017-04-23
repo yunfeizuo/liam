@@ -1,27 +1,12 @@
 package controller
 
 import (
-	"database/sql"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/yunfeizuo/liam/model"
-	"github.com/yunfeizuo/liam/utils"
 )
-
-func SetupDB() *sql.DB {
-	opts, err := utils.ParseConfigFile("../config/integration.json")
-	if err != nil {
-		panic(err)
-	}
-	db := utils.ConnectDB(opts)
-	_, err = db.Exec(`DELETE FROM package`)
-	if err != nil {
-		panic(err)
-	}
-	return db
-}
 
 func TestPackage(t *testing.T) {
 	Convey("package", t, func() {

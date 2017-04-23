@@ -24,3 +24,18 @@ CREATE TABLE IF NOT EXISTS orderitem (
 	brand           varchar(128) NULL,
     PRIMARY KEY(id)
 );
+
+CREATE TABLE IF NOT EXISTS orders (
+    id              SERIAL,
+    customer_id     int NULL,
+    title           varchar(128) NULL,
+    note            varchar(512) NULL,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    id              uuid,
+    title           varchar(128) NULL,
+    img_urls        varchar(65536) NULL,
+    PRIMARY KEY(id)
+);

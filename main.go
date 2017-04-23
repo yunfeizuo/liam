@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	route "github.com/yunfeizuo/liam/routes"
+	"github.com/yunfeizuo/liam/utils"
 )
 
 // Movie Struct
@@ -22,13 +24,16 @@ var movies = map[string]*Movie{
 }
 
 func main() {
-	// opts := utils.ParseOptions()
-	// db := utils.ConnectDB(opts)
-	// // sc := ShipmentController{DB: db}
+	opts := utils.ParseOptions()
+	db := utils.ConnectDB(opts)
+	// sc := ShipmentController{DB: db}
 
 	router := mux.NewRouter()
 	router.HandleFunc("/movies", handleMovies).Methods("GET")
 	router.HandleFunc("/movie/{imdbKey}", handleMovie).Methods("GET", "DELETE", "POST")
+
+	router = route.NewRouter(db)
+
 	http.ListenAndServe(":8080", router)
 }
 
