@@ -18,7 +18,7 @@ func NewRouter(db *sql.DB) *mux.Router {
 	productController := controller.ProductController{DB: db}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/myorders", func(res http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/orders", func(res http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
 			decoder := json.NewDecoder(req.Body)
 			var order model.Order

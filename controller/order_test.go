@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
+	uuid "github.com/satori/go.uuid"
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/yunfeizuo/liam/model"
@@ -47,18 +48,25 @@ func TestOrder(t *testing.T) {
 		})
 
 		Convey("create", func() {
-			Convey("without id", func() {
-				// pkg := &model.Package{ID: 0}
-				// err := controller.CreatePackage(pkg)
-				// So(err, ShouldBeNil)
-				// So(pkg.ID, ShouldBeGreaterThan, 0)
-			})
-
 			Convey("with an id", func() {
-				order := &model.Order{ID: 12345, Title: "some title", Note: "bala", CustomerID: 234}
+				buyer := model.UserInfo{ID: uuid.NewV4(), Name: "bill", Address: "some address", Cellphone: "1234567"}
+				seller := model.UserInfo{ID: uuid.NewV4()}
+				item := model.OrderItem{ID: uuid.NewV4(), Title: "item title", Note: "item note", ImageURL: "http://some.com/sxlas"}
+				items := []model.OrderItem{item}
+				order := &model.Order{ID: uuid.NewV4(), Title: "some title", Note: "bala", Buyer: buyer, Seller: seller, Items: items}
 				err := controller.CreateOrder(order)
 				So(err, ShouldBeNil)
 				// So(pkg.ID, ShouldEqual, 12345)
+
+				orders, err := controller.GetMyOrders()
+				So(err, ShouldBeNil)
+				o := orders[0]
+				So(o.Buyer, ShouldResemble, buyer)
+				So(o.Seller, ShouldResemble, seller)
+				So(o.Title, ShouldResemble, order.Title)
+				So(o.Note, ShouldResemble, order.Note)
+				So(o.Items, ShouldResemble, order.Items)
+				So(o.ID, ShouldResemble, order.ID)
 			})
 		})
 
