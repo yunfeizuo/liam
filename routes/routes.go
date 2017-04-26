@@ -1,94 +1,53 @@
-package route
+package routes
 
 import (
-	"database/sql"
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
+	jwtmiddleware "github.com/yunfeizuo/go-jwt-middleware"
 	"github.com/yunfeizuo/liam/controller"
-	"github.com/yunfeizuo/liam/model"
 )
 
-func NewRouter(db *sql.DB) *mux.Router {
-	orderController := controller.OrderController{DB: db}
-	shipmentController := controller.ShipmentController{DB: db}
-	productController := controller.ProductController{DB: db}
+var AuthSecret = "somepriveate;akfl;samykey"
 
+func NewRouter(db *mgo.Database) http.Handler {
 	router := mux.NewRouter()
-	router.HandleFunc("/orders", func(res http.ResponseWriter, req *http.Request) {
-		if req.Method == "POST" {
-			decoder := json.NewDecoder(req.Body)
-			var order model.Order
-			if err := decoder.Decode(&order); err != nil {
-				log.Println("bad request", err)
-				http.Error(res, err.Error(), http.StatusBadRequest)
-				return
-			}
-			defer req.Body.Close()
-
-			defer req.Body.Close()
-			if err := orderController.CreateOrder(&order); err != nil {
-				log.Println("create order error", err)
-				http.Error(res, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			return
-		}
-
-		orders, _ := orderController.GetMyOrders()
-		js, err := json.Marshal(orders)
-		if err != nil {
-			log.Println("marshal response error", err)
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		res.Header().Set("Content-Type", "application/json")
-		res.Write(js)
-	}).Methods("GET", "POST")
-	router.HandleFunc("/shipment/next", func(res http.ResponseWriter, req *http.Request) {
-		shipment, _ := shipmentController.NextShipment()
-		res.Write([]byte(fmt.Sprintf("%+v", shipment)))
-	}).Methods("GET")
-
-	router.HandleFunc("/products", func(res http.ResponseWriter, req *http.Request) {
-		if req.Method == "POST" {
-			decoder := json.NewDecoder(req.Body)
-			var product model.Product
-			if err := decoder.Decode(&product); err != nil {
-				log.Println("bad request", err)
-				http.Error(res, err.Error(), http.StatusBadRequest)
-				return
-			}
-			defer req.Body.Close()
-
-			defer req.Body.Close()
-			if err := productController.CreateProduct(&product); err != nil {
-				log.Println("create order error", err)
-				http.Error(res, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			return
-		}
-
-		products, _ := productController.GetProducts()
-		js, err := json.Marshal(products)
-		if err != nil {
-			log.Println("marshal response error", err)
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		res.Header().Set("Content-Type", "application/json")
-		res.Write(js)
-	}).Methods("GET", "POST")
-
-	router.HandleFunc("/upload", upload).Methods("POST")
+	orderController := &controller.OrderController{Collection: db.C("order")}
+	router.Handle("/orders", applyMiddlewaresWithAuth(NewOrderHandler(orderController))).Methods("GET", "POST")
+	router.Handle("/upload", applyMiddlewaresWithAuth(upload)).Methods("POST")
+	router.Handle("/login", applyMiddlewares(NewLoginHandler(&controller.LoginController{Secret: []byte(AuthSecret)})))
 	router.PathPrefix("/download/").Handler(http.StripPrefix("/download/", http.FileServer(http.Dir("./upload"))))
 
 	return router
+}
 
+func applyMiddlewares(handler http.HandlerFunc) http.Handler {
+	n := negroni.Classic() // Includes some default middlewares
+	n.UseHandler(handler)
+	return n
+}
+
+func applyMiddlewaresWithAuth(handler http.HandlerFunc) http.Handler {
+	ex := jwtmiddleware.FromFirst(jwtmiddleware.FromParameter("Authorization"), jwtmiddleware.FromParameter("authorization"), jwtmiddleware.FromAuthHeader)
+	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte(AuthSecret), nil
+		},
+		SigningMethod: jwt.SigningMethodHS256,
+		Extractor:     ex,
+	})
+	am := func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		if err := jwtMiddleware.CheckJWT(w, r); err == nil {
+			next(w, r)
+		}
+	}
+
+	n := negroni.Classic() // Includes some default middlewares
+	n.UseFunc(am)
+	n.UseHandler(handler)
+	return n
 }

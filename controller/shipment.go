@@ -1,44 +1,37 @@
 package controller
 
-import (
-	"database/sql"
-	"log"
+// type ShipmentController struct {
+// 	DB *sql.DB
+// }
 
-	"github.com/yunfeizuo/liam/model"
-)
+// func (c *ShipmentController) NextShipment() (*model.Shipment, error) {
 
-type ShipmentController struct {
-	DB *sql.DB
-}
+// 	shipment := model.Shipment{}
+// 	tx, err := c.DB.Begin()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer tx.Rollback()
 
-func (c *ShipmentController) NextShipment() (*model.Shipment, error) {
+// 	err = tx.QueryRow(`SELECT id FROM shipment WHERE status='new' FOR UPDATE`).Scan(&shipment.ID)
+// 	if err == sql.ErrNoRows {
+// 		log.Println("no new shipment, creating one ...")
+// 	} else if err != nil {
+// 		return nil, err
+// 	}
 
-	shipment := model.Shipment{}
-	tx, err := c.DB.Begin()
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
+// 	if shipment.ID == 0 {
+// 		_, err := tx.Query(`INSERT INTO shipment DEFAULT VALUES`)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
 
-	err = tx.QueryRow(`SELECT id FROM shipment WHERE status='new' FOR UPDATE`).Scan(&shipment.ID)
-	if err == sql.ErrNoRows {
-		log.Println("no new shipment, creating one ...")
-	} else if err != nil {
-		return nil, err
-	}
+// 	err = tx.QueryRow(`SELECT id, ship_date, status FROM shipment WHERE status = 'new'`).Scan(&shipment.ID, &shipment.ShipDate, &shipment.Status)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if shipment.ID == 0 {
-		_, err := tx.Query(`INSERT INTO shipment DEFAULT VALUES`)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = tx.QueryRow(`SELECT id, ship_date, status FROM shipment WHERE status = 'new'`).Scan(&shipment.ID, &shipment.ShipDate, &shipment.Status)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
-	return &shipment, err
-}
+// 	err = tx.Commit()
+// 	return &shipment, err
+// }
