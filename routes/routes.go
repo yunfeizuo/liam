@@ -10,16 +10,22 @@ import (
 	"github.com/urfave/negroni"
 	jwtmiddleware "github.com/yunfeizuo/go-jwt-middleware"
 	"github.com/yunfeizuo/liam/controller"
+	"github.com/yunfeizuo/liam/model"
 )
 
 var AuthSecret = "somepriveate;akfl;samykey"
 
 func NewRouter(db *mgo.Database) http.Handler {
+	store := &model.Store{MDB: db}
 	router := mux.NewRouter()
-	orderController := &controller.OrderController{Collection: db.C("order")}
-	router.Handle("/orders", applyMiddlewaresWithAuth(NewOrderHandler(orderController))).Methods("GET", "POST")
+	// orderController := &controller.OrderController{Collection: db.C("order")}
+
+	router.Handle("/nodes", applyMiddlewaresWithAuth(NewGraphHandler(db))).Methods("POST")
+	router.Handle("/query", applyMiddlewaresWithAuth(NewQueryHandler(db))).Methods("POST")
+	// router.Handle("/orders", applyMiddlewaresWithAuth(NewOrderHandler(orderController))).Methods("GET", "POST")
 	router.Handle("/upload", applyMiddlewaresWithAuth(upload)).Methods("POST")
-	router.Handle("/login", applyMiddlewares(NewLoginHandler(&controller.LoginController{Secret: []byte(AuthSecret)})))
+	router.Handle("/login", applyMiddlewares(NewLoginHandler(controller.NewLoginController([]byte(AuthSecret), store))))
+	router.Handle("/refreshuser", applyMiddlewaresWithAuth(upload)).Methods("POST")
 	router.PathPrefix("/download/").Handler(http.StripPrefix("/download/", http.FileServer(http.Dir("./upload"))))
 
 	return router

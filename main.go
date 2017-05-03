@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	// opts := utils.ParseOptions()
 
 	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {

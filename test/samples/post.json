@@ -1,0 +1,76 @@
+[{
+    "type": "post",
+    "id": "123",
+    "title": "foobar.....",
+    "imageUrls": ["http://abc.com/xyz"],
+    "tags": ["ta", "tb"],
+    "properties": {
+        "price": "123.3",
+        "brand": "Coach",
+        "category": "包"
+    },
+    "refs": {}
+}, {
+    "type": "offer",
+    "id": "231",
+    "title": "",
+    "imageUrls": [],
+    "tags": [],
+    "properties": {
+        "name": "张三",
+        "address": "北京市房山区。。。",
+        "cellphone": "12421230123"
+    },
+    "refs": {
+        "user": "af231s33sase",
+        "order": "231x"
+    }
+}, {
+    "type": "order",
+    "id": "231x",
+    "title": "",
+    "imageUrls": [],
+    "tags": [],
+    "properties": {
+        "name": "张三",
+        "address": "北京市房山区。。。",
+        "cellphone": "12421230123"
+    },
+    "refs": {
+        "user": "af231s33sase",
+        "package": "xc300001998hk"
+    }
+}, {
+    "type": "package",
+    "id": "xc300001998hk",
+    "title": "",
+    "imageUrls": [],
+    "tags": [],
+    "properties": {},
+    "trackingID": "xc300001998hk",
+    "refs": {}
+}, {
+    "type": "user",
+    "id": "oz5kL0YLb4DZj_OCl6opDatEsDZE",
+    "properties": {
+        "nickName": "Yunfei",
+        "gender": 1,
+        "language": "zh_CN",
+        "city": "Seattle",
+        "province": "Washington",
+        "country": "US",
+        "avatarUrl": "http://wx.qlogo.cn/mmopen/vi_32/GJMfv1VXb3ibVGVMaSmVP6mz02qzaHIQLUw7CsbpdL2b56GqZ3uADicxMYzlJG1ObcwicgZthMMHtdsADspeMjCHQ/0"
+
+    }
+}, {
+    "type": "post",
+    "title": "",
+    "imgUrls": ["https://cdc383aa.ngrok.io//download/28f9734c-7df8-4dd2-be36-a121b6c97e82"],
+    "tags": [],
+    "__webviewId__": 19,
+    "properties": {
+        "price": 123,
+        "brand": "kirkland",
+        "category": "内衣"
+    }
+}]
